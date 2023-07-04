@@ -1,5 +1,5 @@
 import React from "react"
-import { SafeAreaView, Text, TextInput } from "react-native/types"
+import { SafeAreaView, Text, TextInput } from "react-native"
 
 /** 
  * REMEMBER TO ADD CORRECT TYPING

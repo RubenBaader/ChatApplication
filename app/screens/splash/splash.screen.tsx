@@ -1,5 +1,6 @@
 import React from "react"
-import { SafeAreaView, Text } from "react-native/types"
+import { Text } from "react-native"
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 /** 
  * REMEMBER TO ADD CORRECT TYPING
