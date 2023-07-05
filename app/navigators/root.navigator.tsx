@@ -6,18 +6,25 @@ import {
     createStackNavigator,
     StackCardInterpolationProps,
 } from '@react-navigation/stack';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { SplashScreen } from '../screens/splash';
 import { LoginScreen } from '../screens/login';
+import { LoadingContextProvider, useLoadingContext } from '../contexts/loading.context';
 
-const [loading, setLoading] = useState(false);
+// const [loading, setLoading] = useState(true);
 const stack = createStackNavigator();
 
 export const RootNavigator = () => {
+    const appLoadingContext = useLoadingContext();
+
     return (
-       <NavigationContainer>
-            {loading ? (
-                <stack.Navigator>
+        <NavigationContainer>
+            {appLoadingContext.isLoading ? (
+                <stack.Navigator
+                screenOptions={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}>
                     <stack.Screen name='splash' component={SplashScreen}/>
                 </stack.Navigator>
             ) : (
@@ -25,6 +32,6 @@ export const RootNavigator = () => {
                     <stack.Screen name='login' component={LoginScreen} />
                 </stack.Navigator>
             )}
-       </NavigationContainer> 
+        </NavigationContainer>
     );
 }

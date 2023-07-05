@@ -1,5 +1,5 @@
 import React from "react"
-import { Text } from "react-native"
+import { Image, Text } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 /** 
@@ -8,7 +8,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export const SplashScreen : React.FC<any> = () => {
     return (
         <SafeAreaView>
-            <Text>Hello there, I am a splash screen!</Text>
+            <Text>Chat Application</Text>
+            <Image 
+                source={require('../../assets/img/Splash400x400.png')}
+            />
+            <Text>App is loading...</Text>
         </SafeAreaView>
     )
 }

@@ -26,6 +26,7 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import { RootNavigator } from './navigators';
+import { LoadingContextProvider } from './contexts/loading.context';
 
 
 function App(): JSX.Element {
@@ -37,7 +38,9 @@ function App(): JSX.Element {
 
   return (
     <SafeAreaProvider>
-      <RootNavigator />
+      <LoadingContextProvider>
+        <RootNavigator />
+      </LoadingContextProvider>
     </SafeAreaProvider>
   );
 }
