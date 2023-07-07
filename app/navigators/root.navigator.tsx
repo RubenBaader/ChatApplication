@@ -28,7 +28,11 @@ export const RootNavigator = () => {
                     <stack.Screen name='splash' component={SplashScreen}/>
                 </stack.Navigator>
             ) : (
-                <stack.Navigator>
+                <stack.Navigator
+                screenOptions={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}>
                     <stack.Screen name='login' component={LoginScreen} />
                 </stack.Navigator>
             )}
