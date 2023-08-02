@@ -53,7 +53,11 @@ const styles = StyleSheet.create({
     },
     title: {
         // ...sharedStyles.fontRoboto,
-        fontSize: 16,
+        // fontFamily: 'Roboto',
+        // fontFamily: 'sans-serif-condensed',
+        fontFamily: 'monospace',
+        fontSize: 18,
+        fontWeight: "500",
         textAlign: 'center',
         color: '#fff',
         // color: "black",

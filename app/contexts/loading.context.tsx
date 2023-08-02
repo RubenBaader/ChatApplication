@@ -15,11 +15,11 @@ export const LoadingContextProvider = ({
     children,
 }: React.PropsWithChildren<unknown>) => {
     const [isLoading, setIsLoading] = useState(true);
-    console.log("I am a context provider")
+    // console.log("I am a context provider")
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsLoading(false);
-            console.log("Stopped loading ###################################")
+            // console.log("Stopped loading ###################################")
         }, 1500);
 
         return () => clearTimeout(timer);
@@ -40,6 +40,6 @@ export const useLoadingContext = () => {
             'useAppCMSContext must be used within a AppCMSProvider',
         );
     }
-    console.log("Just providing some context")
+    // console.log("Just providing some context")
     return context;
 }

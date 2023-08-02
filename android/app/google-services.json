@@ -14,7 +14,23 @@
       },
       "oauth_client": [
         {
-          "client_id": "423930373314-2pn8iiofhecgpefqo8j0qqbjv5t56utf.apps.googleusercontent.com",
+          "client_id": "423930373314-1n5blfvgjmk0v0dm66m5f2742blen7t8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pentiachatapp",
+            "certificate_hash": "536073264c898668fd0687e25cc7b67619a75a0a"
+          }
+        },
+        {
+          "client_id": "423930373314-clf4jq4e6f2rdjf9k9ioflepbhh5v26i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pentiachatapp",
+            "certificate_hash": "4780f1f0549012971847a9298118137cf3246cf9"
+          }
+        },
+        {
+          "client_id": "423930373314-fd6kmq38prdluvibh9065qt5g1fs67l0.apps.googleusercontent.com",
           "client_type": 3
         }
       ],

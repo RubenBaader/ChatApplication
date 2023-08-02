@@ -1,14 +1,45 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-interface AuthContextProps {
+/**
+ * I want in my auth context provider
+ * Some information on the user.
+ * Specifically, I want to know their name,
+ * their ID, email, and token.
+ * The token is important because
+ * it's a unique identifier and gatekeeper
+ * for security stuff
+ */
+
+
+
+interface UserDetails {
+    name: string,
+    email: string,
+    id: string,
+    token: string,
+    avatar?: string,
+
     // isLoading: boolean;
     // setIsLoading: (isLoading: boolean) => void;
 }
 
-const AuthContext = createContext<AuthContextProps>({
-    // isLoading: true,
-    // // isLoading: false,
-    // setIsLoading: () => {}
+type AuthStateType = {
+    userDetails: UserDetails | null;
+}
+
+const initialState : AuthStateType = {
+    userDetails : null
+}
+
+interface AuthContextI extends AuthStateType {
+    setDetails: (userDetails : UserDetails | null) => void;
+    clearDetails: () => void;
+}
+
+const AuthContext = createContext<AuthContextI>({
+    ...initialState,
+    setDetails: () => null,
+    clearDetails: () => null,
 });
 
 export const AuthContextProvider = ({
