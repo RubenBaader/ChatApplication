@@ -6,41 +6,95 @@ import {
     GoogleSigninButton,
     statusCodes,
   } from '@react-native-google-signin/google-signin';
-
+import auth from '@react-native-firebase/auth';
+import { useAuthContext } from "../../contexts/auth.context";
+import { firebase } from "@react-native-firebase/firestore";
   
 /** 
- * REMEMBER TO ADD CORRECT TYPING
+ * TODO: Add typing to screen components
  */
 export const LoginScreen : React.FC<any> = () => {
-    const [userInfo, setUserInfo] = useState<any>(null);
+    // const { setUserDetails } = useAuthContext();
+    const authContext = useAuthContext();
 
     GoogleSignin.configure({
-        webClientId: '423930373314-fd6kmq38prdluvibh9065qt5g1fs67l0.apps.googleusercontent.com'
+        // TODO: Store in .env
+        webClientId: "423930373314-fd6kmq38prdluvibh9065qt5g1fs67l0.apps.googleusercontent.com"
     });
 
-    const handleGoogleLogin = async () => {
-        try {
-            await GoogleSignin.hasPlayServices();
-            const data = await GoogleSignin.signIn();
-            setUserInfo({ data });
-            console.log(data);
-            console.log(userInfo);
-        } catch (error : any) {
-            if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-                // user cancelled the login flow
-                console.log("SIGN IN CANCELLED", error);
-            } else if (error.code === statusCodes.IN_PROGRESS) {
-                // operation (e.g. sign in) is in progress already
-                console.log("REQUEST IN PROGRESS", error);
-            } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-                // play services not available or outdated
-                console.log("PLAY SERVICE NOT AVAILABLE", error);
-            } else {
-                // some other error happened
-                console.log("OTHER ERROR", error);
-            }
+    async function onGoogleButtonPress() {
+        // Check if your device supports Google Play
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+
+        // Get the users ID token
+/*         GoogleSignin.signIn()
+            .then(data => {
+
+                console.log("USERDATA::::::::::::::::::::::::::::", data.user);
+                // Create a Google credential with the token
+                const googleCredential = auth.GoogleAuthProvider.credential(data.idToken);
+
+                authContext.setUserDetails({
+                    familyName : data.user.familyName ?? undefined,
+                    givenName : data.user.givenName ?? undefined,
+                    id : data.user.id,
+                    email : data.user.email,
+                    photo : data.user.photo ?? undefined,
+                });
+
+                // await auth().signInWithCredential(googleCredential);
+                auth().signInWithCredential(googleCredential);
+
+                // Sign-in the user with the credential
+                return auth().signInWithCredential(googleCredential);
+            })
+            .then(() => {
+                console.log(authContext.userDetails?.givenName);
+                firebase.firestore().collection('Users').add(authContext.userDetails!);
+
+            })
+            .catch(e => console.log(e)); */
+
+
+        // Get the users ID token
+        const data = await GoogleSignin.signIn();
+        console.log("data = ", data)
+      
+        // Create a Google credential with the token
+        const googleCredential = auth.GoogleAuthProvider.credential(data.idToken);
+      
+        const testJson = {
+            familyName : data.user.familyName ?? undefined,
+            givenName : data.user.givenName ?? undefined,
+            id : data.user.id,
+            email : data.user.email,
+            photo : data.user.photo ?? undefined,
         }
-    };
+
+        authContext.setUserDetails(testJson);
+
+        console.log("testJson = ", testJson);
+
+        const a = (await firebase.firestore().collection("Users").where("email", "==", testJson.email).get()).docs;
+        if (a.length == 0)
+            firebase.firestore().collection("Users").add(testJson);
+        // else update existing user to match latest/custom info
+
+        
+        /* authContext.setUserDetails({
+            familyName : data.user.familyName ?? undefined,
+            givenName : data.user.givenName ?? undefined,
+            id : data.user.id,
+            email : data.user.email,
+            photo : data.user.photo ?? undefined,
+        }); */
+        
+        // console.log("user details = ",authContext.userDetails)
+
+        // Sign-in the user with the credential
+        return auth().signInWithCredential(googleCredential);
+      }
+
 
     return (
         <SafeAreaView>
@@ -62,7 +116,8 @@ export const LoginScreen : React.FC<any> = () => {
             />
 
             <GoogleSigninButton 
-                onPress={() => handleGoogleLogin()}
+                onPress={() => onGoogleButtonPress()}
+                // onPress={() => handleGoogleLogin()}
             />
         </SafeAreaView>
     )

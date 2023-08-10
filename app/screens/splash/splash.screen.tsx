@@ -3,7 +3,7 @@ import { Image, Text } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 /** 
- * REMEMBER TO ADD CORRECT TYPING
+ * TODO: Add typing to screen components
  */
 export const SplashScreen : React.FC<any> = () => {
     return (

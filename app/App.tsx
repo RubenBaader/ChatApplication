@@ -27,6 +27,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import { RootNavigator } from './navigators';
 import { LoadingContextProvider } from './contexts/loading.context';
+import { AuthContextProvider } from './contexts/auth.context';
 
 
 function App(): JSX.Element {
@@ -38,9 +39,15 @@ function App(): JSX.Element {
 
   return (
     <SafeAreaProvider>
+
       <LoadingContextProvider>
-        <RootNavigator />
+        <AuthContextProvider>
+
+          <RootNavigator />
+          
+        </AuthContextProvider>
       </LoadingContextProvider>
+
     </SafeAreaProvider>
   );
 }

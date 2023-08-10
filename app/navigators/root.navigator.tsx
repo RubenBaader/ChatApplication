@@ -6,18 +6,21 @@ import {
     createStackNavigator,
     StackCardInterpolationProps,
 } from '@react-navigation/stack';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { SplashScreen } from '../screens/splash';
 import { LoginScreen } from '../screens/login';
 import { LoadingContextProvider, useLoadingContext } from '../contexts/loading.context';
 import { HomeScreen } from '../screens/home';
+import { useAuthContext } from '../contexts/auth.context';
+import { firebase } from '@react-native-firebase/auth';
 
 // const [loading, setLoading] = useState(true);
 const stack = createStackNavigator();
 
 export const RootNavigator = () => {
     const appLoadingContext = useLoadingContext();
-    const [loggedIn, setLoggedIn] = useState(false)
+    // const [loggedIn, setLoggedIn] = useState(false)
+    const authContext = useAuthContext();
 
     return (
         <NavigationContainer>
@@ -35,7 +38,7 @@ export const RootNavigator = () => {
                     presentation: 'card',
                     headerShown: false,
                 }}>
-                    {!loggedIn ? (
+                    {!authContext.userDetails ? (
                         <stack.Screen name='login' component={LoginScreen} /> 
                     ) : (
                         <stack.Screen name='home' component={HomeScreen} />

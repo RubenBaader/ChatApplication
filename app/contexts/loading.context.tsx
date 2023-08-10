@@ -15,11 +15,9 @@ export const LoadingContextProvider = ({
     children,
 }: React.PropsWithChildren<unknown>) => {
     const [isLoading, setIsLoading] = useState(true);
-    // console.log("I am a context provider")
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsLoading(false);
-            // console.log("Stopped loading ###################################")
         }, 1500);
 
         return () => clearTimeout(timer);
