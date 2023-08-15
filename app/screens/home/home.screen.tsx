@@ -1,13 +1,14 @@
 import { SafeAreaView } from "react-native-safe-area-context"
 import { StyleSheet, Text } from "react-native"
 import { useAuthContext } from "../../contexts/auth.context"
-import { User } from "../../globalTypes/user";
+import { UserI } from "../../schemes/user.scheme";
 import { Conversation } from "../../components/conversation";
 import { MessageProps } from "../../components/message";
 import { firebase } from "@react-native-firebase/firestore";
 import { FlatList } from "react-native-gesture-handler";
 import { Button } from "../../components/button";
 import { useEffect, useState } from "react";
+import { ConversationI } from "../../schemes/conversation.scheme";
 
 /**
  * DB format:
@@ -24,8 +25,9 @@ import { useEffect, useState } from "react";
 
 export const HomeScreen : React.FC = () => {
     const { userDetails } = useAuthContext();
+    const [conversations, setConversations] = useState<ConversationI[]>([]);
 
-    const testUsers : User[] = [
+    const testUsers : UserI[] = [
             {
                 familyName : "Stevens",
                 givenName : "Brad",
@@ -92,15 +94,76 @@ export const HomeScreen : React.FC = () => {
     ]
 
     let conversationList = [testMessages, testMessages2, testMessages3]
-    // const conversationList = firebase.firestore().collection("Conversations").
+
+    
+    const conversationsRef = firebase.firestore().collection('Conversations');
+    // const conversationsRef = firebase.firestore().collection('Conversations').orderBy("ID", "desc");
+    useEffect(() => {
+        const wait = conversationsRef.count().get()
+        // console.log("Number of conversations:", wait)
+
+        const unsubscribe = conversationsRef.onSnapshot(querySnapshot => {
+            const updatedConversations : ConversationI[] = [];
+            // const updatedConversations : MessageProps[][] = [];
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                const conv : ConversationI = {
+                    messages : data.messages,
+                    id : data.id,
+                    latestMessage : data.latestMessage,
+                    users : data.users,
+                }
+                updatedConversations.push(conv);
+                // console.log("OnLoad",doc.data())
+            });
+            setConversations(updatedConversations);
+            console.log("Updated Conversations:",updatedConversations)
+        });
+
+        return () => {
+            unsubscribe();
+        };
+    }, []);
 
     // const authContext = useAuthContext()
 
 
     async function debugAction() {
+        // console.log("Hello debug")
+        const email = userDetails?.email;
+        // console.log("Email", email)
+        const query = conversationsRef.where(`users.rubenbaader@gmail.com`, "==", "true");
+        // const query = conversationsRef.where(`users.${email}`, "==", "true");
+        console.log("Query:",query);
+
+        query.get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    console.log("Can I query")
+                // Here, you can access the individual document data using doc.data()
+                console.log('Document data:', doc.data());
+                });
+            })
+            .catch((error) => {
+                console.log('Error getting documents:', error);
+            });
+
+        console.log("Goodbye Debug")
+        /* const conversationsRef = firebase.firestore().collection('conversations');
+
+        const unsubscribe = conversationsRef.onSnapshot(querySnapshot => {
+            const updatedConversations : MessageProps[][] = [];
+            querySnapshot.forEach(doc => {
+                // updatedConversations.push({ id: doc.id, ...doc.data() });
+                console.log(doc.data())
+            });
+            setConversations(updatedConversations);
+        });
+        console.log("Debugging:")
+        unsubscribe(); */
 
         // read from db
-        const conversationsRef = await firebase.firestore().collection("Conversations").doc("conv1").collection("messages").get();
+        /* const conversationsRef = await firebase.firestore().collection("Conversations").doc("conv1").collection("messages").get();
 
         let l: MessageProps[] = []
 
@@ -121,7 +184,7 @@ export const HomeScreen : React.FC = () => {
             // console.log(l)
             // console.log(data.get()?.toLocaleString())
             // l.push(data.get()?.toLocaleString())
-        })
+        }) */
     }
 
     return (
@@ -129,11 +192,17 @@ export const HomeScreen : React.FC = () => {
             <Text>Hello, {userDetails?.givenName}!</Text>
 
             <FlatList 
-                data={conversationList}
-                renderItem={item => 
+                // data={conversationList}
+                data={conversations}
+                renderItem={({ item, index }) => 
                 <Conversation 
-                    messageDataArr={item.item}
+                    messages={item.messages!}
+                    // messageDataArr={item.messages!}
+                    latestMessage={item.latestMessage!}
+                    id={item.id}
+                    // index={index}
                 />}
+                keyExtractor={(item, index) => index.toString()}
             />
 
             <Button 

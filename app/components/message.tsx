@@ -1,9 +1,9 @@
 import React from "react";
 import { Text, View, StyleProp, ViewStyle } from "react-native";
-import { User } from "../globalTypes/user";
+import { UserI } from "../schemes/user.scheme";
 
 export interface MessageProps {
-    userDetails : User;
+    userDetails : UserI;
     timeStamp : String;
     messageText : String;
     // style? : StyleProp<ViewStyle>;

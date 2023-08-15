@@ -6,7 +6,7 @@
  *  From DB - contacts and associated conversations to load on the home screen
  */
 
-export interface User {
+export interface UserI {
     familyName?: string;
     givenName?: string;
     email: string;
@@ -15,4 +15,3 @@ export interface User {
     conversationIds? : string[];
     friendIds? : string[];
 }
-

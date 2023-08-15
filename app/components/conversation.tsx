@@ -1,122 +1,131 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList } from "react-native-gesture-handler";
 import { Modal, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import { Message, MessageProps } from "./message";
 import { Button } from "./button";
-import { firebase } from "@react-native-firebase/auth";
+import { firebase } from "@react-native-firebase/firestore";
 import { useAuthContext } from "../contexts/auth.context";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ConversationI } from "../schemes/conversation.scheme";
 
 
-interface ConvoProps {
+export interface ConvoProps {
     messageDataArr : MessageProps[];
+    latestMessage : MessageProps;
+    index : Number;
+    id : string;
 }
 
-export const Conversation : React.FC<ConvoProps> = props => {
-    const { messageDataArr } = props;
-    const [show, setShow] = useState<boolean>(false);
+export const Conversation : React.FC<ConversationI> = props => {
+    // const { messageDataArr } = props; 
+    const convId = props.id;
     const authContext = useAuthContext()
+    const [messageDataArr, setMessageDataArr] = useState(props.messages);
 
+    const latestMessage = props.latestMessage;
+
+    const [show, setShow] = useState<boolean>(false);
     const [inputValue, setInputValue] = useState<string>('');
+    
+    const conversationRef = firebase.firestore().collection("Conversations").doc(convId);
+    const messageListRef = conversationRef.collection("messages");
+
+    useEffect(() => {
+        const sortedMessagesRef = messageListRef.orderBy("timeStamp", "asc");
+        const unsubscribe = sortedMessagesRef.onSnapshot(querySnapshot => {
+
+            const list: MessageProps[] = [];
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                const msg : MessageProps = {
+                    messageText : data.messageText,
+                    timeStamp : data.timeStamp,
+                    userDetails : data.userDetails
+                }
+                list.push(msg);
+                // console.log(msg)
+            });
+            console.log("Last message:" ,list[list.length -1]);
+            setMessageDataArr(list);
+            conversationRef.set(
+                { "latestMessage" : list[list.length -1] },
+                { merge : true }
+            )
+        })
+
+        return () => { unsubscribe() }
+    }, [])
 
     const handleInputChange = (text: string) => {
         setInputValue(text);
     };
 
-    const sendMessage = () => {
+    const sendMessage = async () => {
         if(!inputValue)
             return;
         
         const msg: MessageProps = {
             userDetails : authContext.userDetails!,
-            timeStamp: new Date().toString(),
+            timeStamp: new Date().toUTCString(),
             messageText: inputValue
         }
 
-        firebase.firestore().collection("Conversations").doc("conv1").collection("messages").add(msg)
+        // setMessageDataArr(...messageDataArr, msg)
+        messageListRef.add(msg);
 
-        console.log(inputValue)
         setInputValue('');
-
     }
-
-    console.log("messageDataArr ==",messageDataArr.length)
 
     return (
         <SafeAreaView>
-            { !show ? 
             <Pressable
                 style={styles.conversation}
                 onPress={() => setShow(true)}
                     >
                  <Message
-                    // userDetails={messageDataArr[0].userDetails}
-                    // timeStamp={messageDataArr[0].timeStamp}
-                    // messageText={messageDataArr[0].messageText}
-                    userDetails={messageDataArr[messageDataArr.length -1].userDetails}
-                    timeStamp={messageDataArr[messageDataArr.length -1].timeStamp}
-                    messageText={messageDataArr[messageDataArr.length -1].messageText}
+                    userDetails={latestMessage.userDetails}
+                    timeStamp={latestMessage.timeStamp}
+                    messageText={latestMessage.messageText}
+                    // userDetails={messageDataArr[messageDataArr.length -1].userDetails}
+                    // timeStamp={messageDataArr[messageDataArr.length -1].timeStamp}
+                    // messageText={messageDataArr[messageDataArr.length -1].messageText}
                 />
             </Pressable>
-                :
-                <Modal
-                    visible={true}
-                >
-                    <FlatList
-                        data={messageDataArr}
-                        renderItem={
-                            ( {item} : {item : MessageProps} ) => 
-                            <Message
-                                userDetails={item.userDetails}
-                                timeStamp={item.timeStamp}
-                                messageText={item.messageText}
-                            />
-                        }
-                    />
-                    <TextInput
-                        style={styles.inputField}
-                        value={inputValue}
-                        onChangeText={handleInputChange}
-                    />
-                    <Button
-                        style={styles.buttonDefault}
-                        title="Send"
-                        onPress={() => sendMessage()}
-                    />
-                    <Button
-                        style={styles.buttonDefault}
-                        title="Dismiss"
-                        onPress={() => setShow(false)}
-                    />
-                </Modal>     
-            }
+            <Modal
+                visible={show}
+            >
+                <FlatList
+                    data={messageDataArr}
+                    renderItem={
+                        ( {item} : {item : MessageProps} ) => 
+                        <Message
+                            userDetails={item.userDetails}
+                            timeStamp={item.timeStamp}
+                            messageText={item.messageText}
+                        />
+                    }
+                />
+                <TextInput
+                    style={styles.inputField}
+                    value={inputValue}
+                    onChangeText={handleInputChange}
+                />
+                <Button
+                    style={styles.buttonDefault}
+                    title="Send"
+                    onPress={() => sendMessage()}
+                />
+                <Button
+                    style={styles.buttonDefault}
+                    title="Back"
+                    onPress={() => setShow(false)}
+                />
+            </Modal>
         </SafeAreaView>
+    )
+}
 
-        )
-    }
 
-        {/* <Pressable
-            style={styles.conversation}
-            onPress={() => setShow(!show)}
-        >
-            {!show ? <Message 
-                userDetails={messageDataArr[messageDataArr.length -1].userDetails}
-                timeStamp={messageDataArr[messageDataArr.length -1].timeStamp}
-                messageText={messageDataArr[messageDataArr.length -1].messageText}
-            /> 
-            :
-            <FlatList 
-                data={messageDataArr}
-                renderItem={
-                    ( {item} : {item : MessageProps} ) => 
-                    <Message 
-                        userDetails={item.userDetails}
-                        timeStamp={item.timeStamp}
-                        messageText={item.messageText}
-                    />
-                }
-            />}
-        </Pressable> */}
 
 const styles = StyleSheet.create({
     conversation : {

@@ -58,12 +58,12 @@ export const LoginScreen : React.FC<any> = () => {
 
         // Get the users ID token
         const data = await GoogleSignin.signIn();
-        console.log("data = ", data)
+        // console.log("data = ", data)
       
         // Create a Google credential with the token
         const googleCredential = auth.GoogleAuthProvider.credential(data.idToken);
       
-        const testJson = {
+        const googleUser = {
             familyName : data.user.familyName ?? undefined,
             givenName : data.user.givenName ?? undefined,
             id : data.user.id,
@@ -71,16 +71,16 @@ export const LoginScreen : React.FC<any> = () => {
             photo : data.user.photo ?? undefined,
         }
 
-        authContext.setUserDetails(testJson);
+        authContext.setUserDetails(googleUser);
 
-        console.log("testJson = ", testJson);
+        // console.log("testJson = ", testJson);
 
-        const a = (await firebase.firestore().collection("Users").where("email", "==", testJson.email).get()).docs;
+        const a = (await firebase.firestore().collection("Users").where("email", "==", googleUser.email).get()).docs;
         if (a.length == 0)
-            firebase.firestore().collection("Users").add(testJson);
+            firebase.firestore().collection("Users").add(googleUser);
         // else update existing user to match latest/custom info
 
-        
+
         /* authContext.setUserDetails({
             familyName : data.user.familyName ?? undefined,
             givenName : data.user.givenName ?? undefined,

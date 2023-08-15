@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState } from "react";
-import { User } from "../globalTypes/user";
+import { UserI } from "../schemes/user.scheme";
 
 type AuthStateType = {
-    userDetails: User | null;
+    userDetails: UserI | null;
 }
 
 interface AuthContextI extends AuthStateType {
-    setUserDetails: (userDetails : User | null) => void;
+    setUserDetails: (userDetails : UserI | null) => void;
     clearDetails : Function;
 }
 
@@ -19,7 +19,7 @@ const AuthContext = createContext<AuthContextI>({
 export const AuthContextProvider = ({
     children,
 }: React.PropsWithChildren<unknown>) => {
-    const [userData, setUserData] = useState<User | null>(null);
+    const [userData, setUserData] = useState<UserI | null>(null);
     const clearDetails = () => setUserData(null);
     
     return (
