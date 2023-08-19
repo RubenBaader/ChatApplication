@@ -1,3 +1,3 @@
 export * from './button';
-export * from './conversation';
+export * from './preview';
 export * from './message';

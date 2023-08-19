@@ -9,6 +9,8 @@ import {
 import auth from '@react-native-firebase/auth';
 import { useAuthContext } from "../../contexts/auth.context";
 import { firebase } from "@react-native-firebase/firestore";
+import messaging from '@react-native-firebase/messaging';
+import { FirestoreUserI, UserI } from "../../schemes/user.scheme";
   
 /** 
  * TODO: Add typing to screen components
@@ -27,72 +29,69 @@ export const LoginScreen : React.FC<any> = () => {
         await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
 
         // Get the users ID token
-/*         GoogleSignin.signIn()
-            .then(data => {
-
-                console.log("USERDATA::::::::::::::::::::::::::::", data.user);
-                // Create a Google credential with the token
-                const googleCredential = auth.GoogleAuthProvider.credential(data.idToken);
-
-                authContext.setUserDetails({
-                    familyName : data.user.familyName ?? undefined,
-                    givenName : data.user.givenName ?? undefined,
-                    id : data.user.id,
-                    email : data.user.email,
-                    photo : data.user.photo ?? undefined,
-                });
-
-                // await auth().signInWithCredential(googleCredential);
-                auth().signInWithCredential(googleCredential);
-
-                // Sign-in the user with the credential
-                return auth().signInWithCredential(googleCredential);
-            })
-            .then(() => {
-                console.log(authContext.userDetails?.givenName);
-                firebase.firestore().collection('Users').add(authContext.userDetails!);
-
-            })
-            .catch(e => console.log(e)); */
-
-
-        // Get the users ID token
         const data = await GoogleSignin.signIn();
-        // console.log("data = ", data)
-      
+
+        // Get FCM token
+        const fcm = await getFCMToken();
+        console.log("fcm token:", fcm);
+        
         // Create a Google credential with the token
         const googleCredential = auth.GoogleAuthProvider.credential(data.idToken);
       
-        const googleUser = {
+        // Store user data and assign to authContext and firestore
+        const googleUser : FirestoreUserI = {
             familyName : data.user.familyName ?? undefined,
             givenName : data.user.givenName ?? undefined,
             id : data.user.id,
             email : data.user.email,
             photo : data.user.photo ?? undefined,
+            firestoreToken : fcm,
         }
 
         authContext.setUserDetails(googleUser);
 
-        // console.log("testJson = ", testJson);
+        // const firebaseUserList = await firebase.firestore().collection("Users")
+        await firebase.firestore().collection("Users")
+            .where("email", "==", googleUser.email)
+            .limit(1)
+            .get()
+            .then(querySnapshot => {
+                if (!querySnapshot.empty) {
+                  const documentSnapshot = querySnapshot.docs[0];
+                  const documentRef = documentSnapshot.ref;
+                  
+                  return documentRef.update(googleUser);
+                } else {
+                  console.log('No matching document found.');
+                }
+              })
+              .then(() => {
+                console.log('Document updated successfully.');
+              })
+              .catch(error => {
+                console.error('Error updating document:', error);
+              });
 
-        const a = (await firebase.firestore().collection("Users").where("email", "==", googleUser.email).get()).docs;
-        if (a.length == 0)
-            firebase.firestore().collection("Users").add(googleUser);
+
+            /* .get()).docs;
+        if (firebaseUserList.length == 0)
+            firebase.firestore().collection("Users").add(googleUser); */
         // else update existing user to match latest/custom info
-
-
-        /* authContext.setUserDetails({
-            familyName : data.user.familyName ?? undefined,
-            givenName : data.user.givenName ?? undefined,
-            id : data.user.id,
-            email : data.user.email,
-            photo : data.user.photo ?? undefined,
-        }); */
-        
-        // console.log("user details = ",authContext.userDetails)
 
         // Sign-in the user with the credential
         return auth().signInWithCredential(googleCredential);
+      }
+
+      async function getFCMToken() {
+        // Register the device with FCM
+        await messaging().registerDeviceForRemoteMessages();
+      
+        // Get the token
+        const token = await messaging().getToken();
+      
+        // Save the token
+        // await postToApi('/users/1234/tokens', { token });
+        return token;
       }
 
 
@@ -108,16 +107,13 @@ export const LoginScreen : React.FC<any> = () => {
                 value="HELLO THERE"
             />
             <Button
-                // style={},
                 style={ styles.buttonDefault }
                 isLoading={false}
-                    // onPress={() => setPwResetModal(true)}
                 title="Log In"
             />
 
             <GoogleSigninButton 
                 onPress={() => onGoogleButtonPress()}
-                // onPress={() => handleGoogleLogin()}
             />
         </SafeAreaView>
     )

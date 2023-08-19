@@ -15,3 +15,7 @@ export interface UserI {
     conversationIds? : string[];
     friendIds? : string[];
 }
+
+export interface FirestoreUserI extends UserI {
+    firestoreToken? : string;
+}
