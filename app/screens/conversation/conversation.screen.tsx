@@ -14,21 +14,14 @@ import { getStorage, ref, uploadString, getDownloadURL, uploadBytes } from 'fire
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../../config/firebaseConfig";
-import RNFS from 'react-native-fs'; // Import react-native-fs
 
 
-// type ConversationProps = StackScreenProps<RootStackParamList, 'conversation'>
-// type ConversationProps = RouteProp<RootStackParamList, 'conversation'>
 
 export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Props ) => {
     const { conversationId } = route.params
-    // const { id, messages, latestMessage } = props
-    // const route = useRoute();
-    // const { id } = route.params;
 
     const authContext = useAuthContext()
     const [messageDataArr, setMessageDataArr] = useState<MessageProps[]>();
-
 
     const app = initializeApp(firebaseConfig);
     const [inputValue, setInputValue] = useState<string>('');
@@ -37,7 +30,9 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
     const messageListRef = conversationRef.collection("messages");
 
     useEffect(() => {
-        const sortedMessagesRef = messageListRef.orderBy("timeStamp", "asc");
+        const sortedMessagesRef = messageListRef
+            .orderBy("timeStamp", "asc")
+            .limit(50);
         const unsubscribe = sortedMessagesRef.onSnapshot(querySnapshot => {
 
             const list: MessageProps[] = [];
@@ -75,7 +70,7 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
             return;
         const msg: MessageProps = {
             userDetails : authContext.userDetails!,
-            timeStamp: new Date().toUTCString(),
+            timeStamp: new Date().getTime().toString(),
             messageText: inputValue
         }
 
@@ -95,25 +90,19 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
   
   
               const imageBlob = await fetch(imageUri).then(response => response.blob());
-              // await uploadString(storageRef, imageUri, 'data_url');
               
               await uploadBytes(storageRef, imageBlob);
-              // await uploadString(storageRef, 'data:image/jpeg;base64,' + imageData, 'data_url');
       
               const downloadURL = await getDownloadURL(storageRef);
-  
-              // setUploadedImageUrl(downloadURL);
   
               // Save the download URL to Firestore (optional)
               const db = getFirestore();
               const imageDocRef = doc(db, 'Conversations', conversationId, 'messages', new Date().getTime().toString());
-              // const imageDocRef = doc(db, 'images', new Date().getTime().toString());
               const imgMsg : MessageProps = {
                   userDetails : authContext.userDetails!,
                   timeStamp : new Date().getTime().toString(),
                   messageImage : downloadURL
               }
-              // console.log("MESSAGEIMG IN CONVERSATION:", imgMsg.messageImage)
               await setDoc(imageDocRef, imgMsg);
               
   
@@ -121,7 +110,6 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
           });
     }
 
-    // const [uploadedImageUrl, setUploadedImageUrl] = useState('');
     const openCamera = () => {
         launchCamera({ mediaType: 'photo' }, async (response: ImagePickerResponse) => {
           if (!response.didCancel && response.assets && response.assets.length > 0) {
@@ -130,30 +118,22 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
             const storage = getStorage();
             const storageRef = ref(storage, 'images/' + new Date().getTime());
 
-
             const imageBlob = await fetch(imageUri).then(response => response.blob());
-            // await uploadString(storageRef, imageUri, 'data_url');
             
             await uploadBytes(storageRef, imageBlob);
-            // await uploadString(storageRef, 'data:image/jpeg;base64,' + imageData, 'data_url');
     
             const downloadURL = await getDownloadURL(storageRef);
 
-            // setUploadedImageUrl(downloadURL);
-
-            // Save the download URL to Firestore (optional)
+            // Save the download URL to Firestore
             const db = getFirestore();
             const imageDocRef = doc(db, 'Conversations', conversationId, 'messages', new Date().getTime().toString());
-            // const imageDocRef = doc(db, 'images', new Date().getTime().toString());
+
             const imgMsg : MessageProps = {
                 userDetails : authContext.userDetails!,
                 timeStamp : new Date().getTime().toString(),
                 messageImage : downloadURL
             }
-            // console.log("MESSAGEIMG IN CONVERSATION:", imgMsg.messageImage)
             await setDoc(imageDocRef, imgMsg);
-            
-
           }
         });
       };
@@ -179,6 +159,7 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
                     style={styles.inputField}
                     value={inputValue}
                     onChangeText={handleInputChange}
+                    onSubmitEditing={sendMessage}
                 />
                 <Button
                     style={styles.buttonDefault}
@@ -187,9 +168,13 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
                 />
                 <Button
                     style={styles.buttonDefault}
-                    title="📸"
+                    title="View Gallery 📸"
                     onPress={() => openGallery()}
-                    // onPress={() => openCamera()}
+                />
+                <Button
+                    style={styles.buttonDefault}
+                    title="Open Camera 📸"
+                    onPress={() => openCamera()}
                 />
 
                 <Button

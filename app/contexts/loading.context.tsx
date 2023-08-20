@@ -7,7 +7,6 @@ interface LoadingContextProps {
 
 const AppLoadingContext = createContext<LoadingContextProps>({
     isLoading: true,
-    // isLoading: false,
     setIsLoading: () => {}
 });
 

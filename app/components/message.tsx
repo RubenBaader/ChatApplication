@@ -11,6 +11,8 @@ export interface MessageProps {
 
 export const Message: React.FC<MessageProps> = props => {
     const senderImg = props.userDetails.photo ? {uri: props.userDetails.photo} : require("../assets/img/placerholder_avatar.png")
+    const cast = Number(props.timeStamp);
+    const date = new Date(cast).toDateString()
 
     return (
         <View>
@@ -18,7 +20,7 @@ export const Message: React.FC<MessageProps> = props => {
                 source={senderImg}
                 style={style.image}
             />
-            <Text>{props.userDetails.givenName ?? props.userDetails.email} at {props.timeStamp}</Text>
+            <Text>{props.userDetails.givenName ?? props.userDetails.email} at {date}</Text>
             <Text>{props.messageText}</Text>
             {props.messageImage && <Image source={{uri: props.messageImage}} style={{ maxWidth: 100, height: 100 }} />}
         </View>
@@ -30,5 +32,4 @@ const style = StyleSheet.create({
         height: 40,
         width:  40
     }
-
 })

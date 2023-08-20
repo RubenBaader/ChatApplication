@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { SafeAreaView, StyleSheet, Text, TextInput } from "react-native"
+import { Alert, SafeAreaView, StyleSheet, Text, TextInput } from "react-native"
 import { Button } from "../../components/button"
 import {
     GoogleSignin,
@@ -11,6 +11,7 @@ import { useAuthContext } from "../../contexts/auth.context";
 import { firebase } from "@react-native-firebase/firestore";
 import messaging from '@react-native-firebase/messaging';
 import { FirestoreUserI, UserI } from "../../schemes/user.scheme";
+import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
   
 /** 
  * TODO: Add typing to screen components
@@ -24,6 +25,50 @@ export const LoginScreen : React.FC<any> = () => {
         webClientId: "423930373314-fd6kmq38prdluvibh9065qt5g1fs67l0.apps.googleusercontent.com"
     });
 
+    
+    async function onFacebookButtonPress() {
+      console.log("Current user:", firebase.auth().currentUser)
+      // Attempt login with permissions
+      
+      const result = await LoginManager.logInWithPermissions(['public_profile', 'email'])
+      console.log("RESULT:" ,result);
+
+      if (result.isCancelled) {
+        throw 'User cancelled the login process';
+      }
+
+      // Once signed in, get the users AccessToken
+      const data = await AccessToken.getCurrentAccessToken();
+
+      if (!data) {
+        throw 'Something went wrong obtaining access token';
+      }
+      
+      // Create a Firebase credential with the AccessToken
+      const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken);
+      console.log("facebook credential:", facebookCredential)
+
+      // Sign-in the user with the credential (or try)
+      try {
+        await auth().signInWithCredential(facebookCredential);
+
+        // TODO: update authCredentials with login credentials
+        //      get fcm token
+        //      add user to firestore
+      }
+      catch (error : any) {
+        if (error.code === 'auth/account-exists-with-different-credential') {
+          Alert.alert("⚠️ This user exists in a different authentication")
+          // Handle the account linking process
+          
+        } else {
+          // Handle other errors
+          console.log("Failed to log in.", error.code)
+        }
+      }
+      return
+    }
+
     async function onGoogleButtonPress() {
         // Check if your device supports Google Play
         await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
@@ -33,7 +78,6 @@ export const LoginScreen : React.FC<any> = () => {
 
         // Get FCM token
         const fcm = await getFCMToken();
-        console.log("fcm token:", fcm);
         
         // Create a Google credential with the token
         const googleCredential = auth.GoogleAuthProvider.credential(data.idToken);
@@ -72,14 +116,27 @@ export const LoginScreen : React.FC<any> = () => {
                 console.error('Error updating document:', error);
               });
 
-
-            /* .get()).docs;
-        if (firebaseUserList.length == 0)
-            firebase.firestore().collection("Users").add(googleUser); */
-        // else update existing user to match latest/custom info
-
         // Sign-in the user with the credential
-        return auth().signInWithCredential(googleCredential);
+        // return auth().signInWithCredential(googleCredential);
+
+        try {
+          await auth().signInWithCredential(googleCredential);
+  
+          // TODO: update authCredentials with login credentials
+          //      get fcm token
+          //      add user to firestore
+        }
+        catch (error : any) {
+          if (error.code === 'auth/account-exists-with-different-credential') {
+            Alert.alert("⚠️ This user exists in a different authentication")
+            // Handle the account linking process
+            
+          } else {
+            // Handle other errors
+            console.log("Failed to log in.", error.code)
+          }
+        }
+        return;
       }
 
       async function getFCMToken() {
@@ -98,18 +155,11 @@ export const LoginScreen : React.FC<any> = () => {
     return (
         <SafeAreaView>
             <Text>Welcome to the LOGIN screen</Text>
-            <TextInput 
-                style={styles.inputField}
-                value="HELLO THERE"
-            />
-            <TextInput 
-                style={styles.inputField}
-                value="HELLO THERE"
-            />
             <Button
                 style={ styles.buttonDefault }
                 isLoading={false}
-                title="Log In"
+                title="Facebook"
+                onPress={() => onFacebookButtonPress()}
             />
 
             <GoogleSigninButton 
@@ -131,7 +181,7 @@ const styles = StyleSheet.create({
     },
     buttonDefault: {
         marginTop: 15,
-        backgroundColor: "purple",
+        backgroundColor: "blue",
         // color: "black",
     }
 })

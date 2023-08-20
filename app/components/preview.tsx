@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FlatList } from "react-native-gesture-handler";
-import { Modal, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import { Message, MessageProps } from "./message";
 import { Button } from "./button";
 import { firebase } from "@react-native-firebase/firestore";
@@ -28,12 +28,13 @@ export const ConvPreview : React.FC<PreviewProps> = props => {
         <Pressable
             style={styles.conversation}
             onPress={() => onPress()}
-                >
-                <Message
+            >
+            <Message
                 userDetails={latestMessage.userDetails}
                 timeStamp={latestMessage.timeStamp}
                 messageText={latestMessage.messageText}
             />
+            <Image source={require('../assets/img/chatChevron.png')} style={styles.chevron} />
         </Pressable>
     )
 }
@@ -44,6 +45,11 @@ const styles = StyleSheet.create({
         borderColor : 'red',
         borderWidth: 2,
         margin : 10,
+        display: "flex",
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between"
     },
     buttonDefault: {
         marginTop: 15,
@@ -59,5 +65,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         // color: "pink",
     },
+    chevron: {
+        height: 50,
+        width: 30,
+    }
 
 })

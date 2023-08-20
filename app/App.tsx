@@ -137,21 +137,6 @@ function App(): JSX.Element {
     });
   }
 
-  /* async function backgroundListen() {
-    notifee.onBackgroundEvent(async ({ type, detail }) => {
-      const { notification, pressAction } = detail;
-
-      if (type === EventType.PRESS) {
-          // navigation.navigate('conversation', { conversationId: 'conv2' });
-          console.log("Hello notifications")
-
-          if(notification!.id != undefined)
-            await notifee.cancelNotification(notification!.id);
-      }
-    });
-  } */
-
-  
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,

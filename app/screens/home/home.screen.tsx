@@ -39,10 +39,10 @@ export const HomeScreen : React.FC<Home> = ({ navigation } : Home) => {
     // ...
 
     const conversationsRef = firebase.firestore().collection('Conversations');
-    // const conversationsRef = firebase.firestore().collection('Conversations').orderBy("ID", "desc");
+    const sortedRef = conversationsRef.orderBy("latestMessage.timeStamp", "desc");
     useEffect(() => {
 
-        const unsubscribe = conversationsRef.onSnapshot(querySnapshot => {
+        const unsubscribe = sortedRef.onSnapshot(querySnapshot => {
             
             // Listen for updates in conversations
             const updatedConversations : ConversationI[] = [];
@@ -55,7 +55,6 @@ export const HomeScreen : React.FC<Home> = ({ navigation } : Home) => {
                     users         : data.users,
                 }
                 updatedConversations.push(conv);
-                // console.log("OnLoad",doc.data())
             });
             setConversations(updatedConversations);
         });
@@ -64,13 +63,11 @@ export const HomeScreen : React.FC<Home> = ({ navigation } : Home) => {
             unsubscribe();
         };
     }, []);
-    // const navigation = useNavigation();
-    
 
-    async function debugAction() {
+    /* async function debugAction() {
         console.log("debug action")
         navigation.navigate('conversation', {conversationId: "conv2"})
-    }
+    } */
 
     const openConv = (id : string) => {
         navigation.navigate('conversation', {conversationId: id})
@@ -85,54 +82,19 @@ export const HomeScreen : React.FC<Home> = ({ navigation } : Home) => {
                 renderItem={({ item, index }) => 
                 <ConvPreview 
                     messages={item.messages!}
-                    // messageDataArr={item.messages!}
                     latestMessage={item.latestMessage!}
                     id={item.id}
                     onPress={() => {
-                        // console.log("Clicked on", item.id)
-                        // navigation.navigate('conversation', {conversationId: "conv2"}) 
                         openConv(item.id)
                     }}
-                    // index={index}
-                    
                 />}
                 keyExtractor={(item, index) => index.toString()}
             />
-            {/* <FlatList 
-                // data={conversationList}
-                data={conversations}
-                renderItem={({ item, index }) => 
-                <Conversation 
-                    messages={item.messages!}
-                    // messageDataArr={item.messages!}
-                    latestMessage={item.latestMessage!}
-                    id={item.id}
-                    // index={index}
-                />}
-                keyExtractor={(item, index) => index.toString()}
-            /> */}
-
-            <Button 
+            {/* <Button 
                 style={ styles.buttonDefault }
                 title="DEBUG"
                 onPress={() => debugAction()}
-            />
-
-            {/* <Button 
-                style={ styles.buttonDefault }
-                title="New Conversation"
-                onPress={() => {
-                    // get information about conversation title
-
-                    // get conversation participants
-
-                    // check if entry exsits in db
-
-                    // sync to db and add to member
-                }
-                }
             /> */}
-
         </SafeAreaView>
     )
 }
