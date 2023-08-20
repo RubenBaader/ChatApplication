@@ -1,23 +1,21 @@
-import React, { useState } from "react"
-import { Alert, SafeAreaView, StyleSheet, Text, TextInput } from "react-native"
+import React from "react"
+import { Alert, SafeAreaView, StyleSheet, Text } from "react-native"
 import { Button } from "../../components/button"
 import {
     GoogleSignin,
     GoogleSigninButton,
-    statusCodes,
   } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import { useAuthContext } from "../../contexts/auth.context";
 import { firebase } from "@react-native-firebase/firestore";
 import messaging from '@react-native-firebase/messaging';
-import { FirestoreUserI, UserI } from "../../schemes/user.scheme";
+import { FirestoreUserI } from "../../schemes/user.scheme";
 import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
   
 /** 
  * TODO: Add typing to screen components
  */
 export const LoginScreen : React.FC<any> = () => {
-    // const { setUserDetails } = useAuthContext();
     const authContext = useAuthContext();
 
     GoogleSignin.configure({
@@ -27,11 +25,9 @@ export const LoginScreen : React.FC<any> = () => {
 
     
     async function onFacebookButtonPress() {
-      console.log("Current user:", firebase.auth().currentUser)
-      // Attempt login with permissions
-      
+
+      // Attempt login with permissions      
       const result = await LoginManager.logInWithPermissions(['public_profile', 'email'])
-      console.log("RESULT:" ,result);
 
       if (result.isCancelled) {
         throw 'User cancelled the login process';
@@ -46,7 +42,6 @@ export const LoginScreen : React.FC<any> = () => {
       
       // Create a Firebase credential with the AccessToken
       const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken);
-      console.log("facebook credential:", facebookCredential)
 
       // Sign-in the user with the credential (or try)
       try {
@@ -94,7 +89,6 @@ export const LoginScreen : React.FC<any> = () => {
 
         authContext.setUserDetails(googleUser);
 
-        // const firebaseUserList = await firebase.firestore().collection("Users")
         await firebase.firestore().collection("Users")
             .where("email", "==", googleUser.email)
             .limit(1)
@@ -115,9 +109,6 @@ export const LoginScreen : React.FC<any> = () => {
               .catch(error => {
                 console.error('Error updating document:', error);
               });
-
-        // Sign-in the user with the credential
-        // return auth().signInWithCredential(googleCredential);
 
         try {
           await auth().signInWithCredential(googleCredential);
@@ -146,8 +137,7 @@ export const LoginScreen : React.FC<any> = () => {
         // Get the token
         const token = await messaging().getToken();
       
-        // Save the token
-        // await postToApi('/users/1234/tokens', { token });
+        // Return the token
         return token;
       }
 
@@ -177,11 +167,9 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         marginTop: 8,
         fontSize: 16,
-        // color: "pink",
     },
     buttonDefault: {
         marginTop: 15,
         backgroundColor: "blue",
-        // color: "black",
     }
 })

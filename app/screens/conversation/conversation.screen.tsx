@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { FlatList } from "react-native-gesture-handler";
-import { Modal, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import { Modal, StyleSheet, TextInput } from "react-native";
 import { Message, MessageProps } from "../../components"; 
 import { Button } from "../../components"; 
 import { firebase } from "@react-native-firebase/firestore";
 import { useAuthContext } from "../../contexts/auth.context"; 
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ConversationI } from "../../schemes/conversation.scheme"; 
-import { StackScreenProps } from "@react-navigation/stack";
-import { Props, RootStackParamList } from "../../navigators";
+import { Props } from "../../navigators";
 import {launchCamera, launchImageLibrary, ImagePickerResponse} from 'react-native-image-picker';
-import { getStorage, ref, uploadString, getDownloadURL, uploadBytes } from 'firebase/storage';
+import { getStorage, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../../config/firebaseConfig";
@@ -73,8 +71,6 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
             timeStamp: new Date().getTime().toString(),
             messageText: inputValue
         }
-
-        // setMessageDataArr(...messageDataArr, msg)
         messageListRef.add(msg);
 
         setInputValue('');

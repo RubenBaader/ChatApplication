@@ -1,14 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { FlatList } from "react-native-gesture-handler";
-import { Image, Modal, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import React from "react";
+import { Image, Pressable, StyleSheet } from "react-native";
 import { Message, MessageProps } from "./message";
-import { Button } from "./button";
-import { firebase } from "@react-native-firebase/firestore";
-import { useAuthContext } from "../contexts/auth.context";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { ConversationI } from "../schemes/conversation.scheme";
-import notifee from '@notifee/react-native';
-import { useNavigation } from "@react-navigation/native";
 
 export interface ConvoProps {
     messageDataArr : MessageProps[];
@@ -54,7 +47,6 @@ const styles = StyleSheet.create({
     buttonDefault: {
         marginTop: 15,
         backgroundColor: "purple",
-        // color: "black",
     },
     inputField: {
         borderWidth: 1,
@@ -63,7 +55,6 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         marginTop: 8,
         fontSize: 16,
-        // color: "pink",
     },
     chevron: {
         height: 50,

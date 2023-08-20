@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View, StyleProp, ViewStyle, Image, StyleSheet } from "react-native";
+import { Text, View, Image, StyleSheet } from "react-native";
 import { UserI } from "../schemes/user.scheme";
 
 export interface MessageProps {

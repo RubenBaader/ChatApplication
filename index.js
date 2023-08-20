@@ -6,27 +6,22 @@ import { AppRegistry } from 'react-native';
 import App from './app/App';
 import { name as appName } from './app.json';
 import notifee, { EventType } from '@notifee/react-native';
-import messaging from '@react-native-firebase/messaging';
 import { navigationRef } from './app/navigators';
 import { decode } from 'base-64';
 import { Settings } from 'react-native-fbsdk-next';
 
-// Ask for consent first if necessary
-// Possibly only do this for iOS if no need to handle a GDPR-type flow
 Settings.initializeSDK();
 
 if (typeof atob === 'undefined') {
     global.atob = decode;
 }
 
-// // listen for FCM message
-// messaging().onMessage(onMessageReceived);
-// messaging().setBackgroundMessageHandler(backgroundListen);
-
+// Handle background events from notifee
 notifee.onBackgroundEvent(async ({ type, detail }) => {
     const { notification, pressAction } = detail;
 
     if (type === EventType.PRESS) {
+        //use AsnycStorage to stay logged in, then navigate
         if (navigationRef.isReady())
             navigationRef.navigate('conversation', {
                 conversationId: pressAction.id,
@@ -39,9 +34,5 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
         await notifee.cancelNotification(notification.id);
     }
 });
-
-async function backgroundListen() {
-    // console.log('Before notifee background event');
-}
 
 AppRegistry.registerComponent(appName, () => App);

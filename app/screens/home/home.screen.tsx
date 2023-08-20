@@ -1,19 +1,13 @@
 import { SafeAreaView } from "react-native-safe-area-context"
 import { StyleSheet, Text } from "react-native"
 import { useAuthContext } from "../../contexts/auth.context"
-import { UserI } from "../../schemes/user.scheme";
 import { ConvPreview } from "../../components/preview";
-import { MessageProps } from "../../components/message";
 import { firebase } from "@react-native-firebase/firestore";
 import { FlatList } from "react-native-gesture-handler";
-import { Button } from "../../components/button";
 import { useEffect, useState } from "react";
 import { ConversationI } from "../../schemes/conversation.scheme";
 import { PermissionsAndroid } from "react-native";
-import notifee from '@notifee/react-native';
-import messaging from '@react-native-firebase/messaging';
-import { useNavigation } from "@react-navigation/native";
-import { Home, Props } from "../../navigators";
+import { Home } from "../../navigators";
 
 
 /**
@@ -27,7 +21,7 @@ import { Home, Props } from "../../navigators";
  *  Conversation document
  *      Message collection
  *      Associated user IDs
- */
+ **/
 
 export const HomeScreen : React.FC<Home> = ({ navigation } : Home) => {
     const { userDetails } = useAuthContext();
@@ -64,11 +58,6 @@ export const HomeScreen : React.FC<Home> = ({ navigation } : Home) => {
         };
     }, []);
 
-    /* async function debugAction() {
-        console.log("debug action")
-        navigation.navigate('conversation', {conversationId: "conv2"})
-    } */
-
     const openConv = (id : string) => {
         navigation.navigate('conversation', {conversationId: id})
     }
@@ -90,11 +79,6 @@ export const HomeScreen : React.FC<Home> = ({ navigation } : Home) => {
                 />}
                 keyExtractor={(item, index) => index.toString()}
             />
-            {/* <Button 
-                style={ styles.buttonDefault }
-                title="DEBUG"
-                onPress={() => debugAction()}
-            /> */}
         </SafeAreaView>
     )
 }
@@ -107,11 +91,9 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         marginTop: 8,
         fontSize: 16,
-        // color: "pink",
     },
     buttonDefault: {
         marginTop: 15,
         backgroundColor: "purple",
-        // color: "black",
     }
 })

@@ -15,6 +15,7 @@ export const LoadingContextProvider = ({
 }: React.PropsWithChildren<unknown>) => {
     const [isLoading, setIsLoading] = useState(true);
     useEffect(() => {
+        // set minimum load time
         const timer = setTimeout(() => {
             setIsLoading(false);
         }, 1500);
@@ -37,6 +38,5 @@ export const useLoadingContext = () => {
             'useAppCMSContext must be used within a AppCMSProvider',
         );
     }
-    // console.log("Just providing some context")
     return context;
 }

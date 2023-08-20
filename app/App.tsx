@@ -5,115 +5,28 @@
  * @format
  */
 
-import React, { useEffect, useState } from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-  Linking,
-} from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-import { Props, RootNavigator, RootStackParamList } from './navigators';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { RootNavigator } from './navigators';
 import { LoadingContextProvider } from './contexts/loading.context';
 import { AuthContextProvider, useAuthContext } from './contexts/auth.context';
-import notifee, { EventType } from '@notifee/react-native';
+import notifee from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
-import { navigationRef } from './navigators';
-/* import { Settings } from 'react-native-fbsdk-next';
 
-// Ask for consent first if necessary
-// Possibly only do this for iOS if no need to handle a GDPR-type flow
-Settings.initializeSDK();
- */
 
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
-  // const navigation = useNavigation<RootStackParamList>();
-  // const navigation = useNavigation<any>();
-  // navigation.navigate('conversation', { conversationId: 'conv2' });
-
-  const authContext = useAuthContext();
 
   useEffect(() => {
     // listen for FCM message
     messaging().setBackgroundMessageHandler(onMessageReceived);
-      // messaging().onMessage(onMessageReceived);
-      // backgroundListen();
-
-      // messaging().setBackgroundMessageHandler(bootstrap)
-      
-
-      /* return notifee.onBackgroundEvent(async ({ type, detail }) => {
-        console.log("Background Event:", type, detail)
-      // return notifee.onForegroundEvent(({ type, detail }) => {
-        switch (type) {
-          case EventType.DISMISSED:
-            console.log('User dismissed notification', detail.notification);
-            break;
-          case EventType.PRESS:
-            console.log('User pressed notification', detail.notification);
-            break;
-        }
-      }); */
-
-
-      bootstrap()
-      // .then(x => console.log("bootstrap"))
-      .catch(console.error);
-      
     },[])
     
-  
-  const [screenProps, setScreenProps] = useState<string | null >(null);
-  async function bootstrap() {
-    // console.log("before await")
-    const initialNotification = await notifee.getInitialNotification();
-
-    console.log("Hell from bootstrap");
-
-    if (initialNotification) {
-      console.log('Notification caused application to open', initialNotification.notification);
-      console.log('Press action used to open the app', initialNotification.pressAction);
-      navToConv("conv2");
-    }
-  }
-
-  
-  const navToConv = (input : string) => {
-    // set usercontext to something
-    authContext.setUserDetails({
-      email : "test@test.com",
-      id : "1234"
-    })
-    // pass notification data to some props?
-    // setScreenProps(conversationId)
-
-    if(navigationRef.isReady())
-      navigationRef.navigate('conversation', {conversationId : "conv2"})
-    else
-      console.log("NavigationRef not ready yet")
-    // RootNav takes id as optional prop
-    // consume props to navigate from rootnavigator or home screen
-
-  }
 
   async function onMessageReceived(message : any) {
-    console.log('onMessageReceived Received a message!');
-
     /* if(os.type == iOs)
         await notifee.requestPermission(); */
 
@@ -128,7 +41,6 @@ function App(): JSX.Element {
         body: message.notification.body,
         android: {
             channelId,
-            // smallIcon: 'name-of-a-small-icon', // optional, defaults to 'ic_launcher'.
             pressAction: {
                 id: 'conv2',
                 launchActivity: "default"
@@ -150,9 +62,7 @@ function App(): JSX.Element {
         <LoadingContextProvider>
           <AuthContextProvider>
 
-            <RootNavigator 
-              destination={screenProps}
-            />
+            <RootNavigator />
       
           </AuthContextProvider>
         </LoadingContextProvider>

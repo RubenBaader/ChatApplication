@@ -52,14 +52,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
-        // ...sharedStyles.fontRoboto,
-        // fontFamily: 'Roboto',
-        // fontFamily: 'sans-serif-condensed',
         fontFamily: 'monospace',
         fontSize: 18,
         fontWeight: "500",
         textAlign: 'center',
         color: '#fff',
-        // color: "black",
     },
 });
