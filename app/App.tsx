@@ -33,7 +33,12 @@ import notifee, { EventType } from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { navigationRef } from './navigators';
+/* import { Settings } from 'react-native-fbsdk-next';
 
+// Ask for consent first if necessary
+// Possibly only do this for iOS if no need to handle a GDPR-type flow
+Settings.initializeSDK();
+ */
 
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';

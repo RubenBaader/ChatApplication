@@ -8,6 +8,16 @@ import { name as appName } from './app.json';
 import notifee, { EventType } from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
 import { navigationRef } from './app/navigators';
+import { decode } from 'base-64';
+import { Settings } from 'react-native-fbsdk-next';
+
+// Ask for consent first if necessary
+// Possibly only do this for iOS if no need to handle a GDPR-type flow
+Settings.initializeSDK();
+
+if (typeof atob === 'undefined') {
+    global.atob = decode;
+}
 
 // // listen for FCM message
 // messaging().onMessage(onMessageReceived);

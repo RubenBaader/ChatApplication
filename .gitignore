@@ -68,3 +68,4 @@ yarn-error.log
 # custom
 serviceKey
 app/firebase-admin
+app/config

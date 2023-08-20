@@ -7,10 +7,15 @@ import { firebase } from "@react-native-firebase/firestore";
 import { useAuthContext } from "../../contexts/auth.context"; 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ConversationI } from "../../schemes/conversation.scheme"; 
-import notifee from '@notifee/react-native';
-import { RouteProp, useRoute } from "@react-navigation/native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { Props, RootStackParamList } from "../../navigators";
+import {launchCamera, launchImageLibrary, ImagePickerResponse} from 'react-native-image-picker';
+import { getStorage, ref, uploadString, getDownloadURL, uploadBytes } from 'firebase/storage';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { initializeApp } from "firebase/app";
+import firebaseConfig from "../../config/firebaseConfig";
+import RNFS from 'react-native-fs'; // Import react-native-fs
+
 
 // type ConversationProps = StackScreenProps<RootStackParamList, 'conversation'>
 // type ConversationProps = RouteProp<RootStackParamList, 'conversation'>
@@ -23,9 +28,9 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
 
     const authContext = useAuthContext()
     const [messageDataArr, setMessageDataArr] = useState<MessageProps[]>();
-    // const [messageDataArr, setMessageDataArr] = useState(messages);
 
-    // const [show, setShow] = useState<boolean>(false);
+
+    const app = initializeApp(firebaseConfig);
     const [inputValue, setInputValue] = useState<string>('');
     
     const conversationRef = firebase.firestore().collection("Conversations").doc(conversationId);
@@ -41,12 +46,11 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
                 const msg : MessageProps = {
                     messageText : data.messageText,
                     timeStamp   : data.timeStamp,
-                    userDetails : data.userDetails
+                    userDetails : data.userDetails,
+                    messageImage : data.messageImage ?? "",
                 }
                 list.push(msg);
             });
-
-            // createNotification();
 
             setMessageDataArr(list);
             conversationRef.set(
@@ -81,6 +85,79 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
         setInputValue('');
     }
 
+    const openGallery = () => {
+        launchImageLibrary({ mediaType: 'photo' }, async (response: ImagePickerResponse) => {
+            if (!response.didCancel && response.assets && response.assets.length > 0) {
+              const imageUri = response.assets[0].uri!;
+  
+              const storage = getStorage();
+              const storageRef = ref(storage, 'images/' + new Date().getTime());
+  
+  
+              const imageBlob = await fetch(imageUri).then(response => response.blob());
+              // await uploadString(storageRef, imageUri, 'data_url');
+              
+              await uploadBytes(storageRef, imageBlob);
+              // await uploadString(storageRef, 'data:image/jpeg;base64,' + imageData, 'data_url');
+      
+              const downloadURL = await getDownloadURL(storageRef);
+  
+              // setUploadedImageUrl(downloadURL);
+  
+              // Save the download URL to Firestore (optional)
+              const db = getFirestore();
+              const imageDocRef = doc(db, 'Conversations', conversationId, 'messages', new Date().getTime().toString());
+              // const imageDocRef = doc(db, 'images', new Date().getTime().toString());
+              const imgMsg : MessageProps = {
+                  userDetails : authContext.userDetails!,
+                  timeStamp : new Date().getTime().toString(),
+                  messageImage : downloadURL
+              }
+              // console.log("MESSAGEIMG IN CONVERSATION:", imgMsg.messageImage)
+              await setDoc(imageDocRef, imgMsg);
+              
+  
+            }
+          });
+    }
+
+    // const [uploadedImageUrl, setUploadedImageUrl] = useState('');
+    const openCamera = () => {
+        launchCamera({ mediaType: 'photo' }, async (response: ImagePickerResponse) => {
+          if (!response.didCancel && response.assets && response.assets.length > 0) {
+            const imageUri = response.assets[0].uri!;
+
+            const storage = getStorage();
+            const storageRef = ref(storage, 'images/' + new Date().getTime());
+
+
+            const imageBlob = await fetch(imageUri).then(response => response.blob());
+            // await uploadString(storageRef, imageUri, 'data_url');
+            
+            await uploadBytes(storageRef, imageBlob);
+            // await uploadString(storageRef, 'data:image/jpeg;base64,' + imageData, 'data_url');
+    
+            const downloadURL = await getDownloadURL(storageRef);
+
+            // setUploadedImageUrl(downloadURL);
+
+            // Save the download URL to Firestore (optional)
+            const db = getFirestore();
+            const imageDocRef = doc(db, 'Conversations', conversationId, 'messages', new Date().getTime().toString());
+            // const imageDocRef = doc(db, 'images', new Date().getTime().toString());
+            const imgMsg : MessageProps = {
+                userDetails : authContext.userDetails!,
+                timeStamp : new Date().getTime().toString(),
+                messageImage : downloadURL
+            }
+            // console.log("MESSAGEIMG IN CONVERSATION:", imgMsg.messageImage)
+            await setDoc(imageDocRef, imgMsg);
+            
+
+          }
+        });
+      };
+
     return (
         <SafeAreaView>
             <Modal
@@ -94,6 +171,7 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
                             userDetails={item.userDetails}
                             timeStamp={item.timeStamp}
                             messageText={item.messageText}
+                            messageImage={item.messageImage}
                         />
                     }
                 />
@@ -107,6 +185,13 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
                     title="Send"
                     onPress={() => sendMessage()}
                 />
+                <Button
+                    style={styles.buttonDefault}
+                    title="📸"
+                    onPress={() => openGallery()}
+                    // onPress={() => openCamera()}
+                />
+
                 <Button
                     style={styles.buttonDefault}
                     title="Back"
