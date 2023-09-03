@@ -25,7 +25,7 @@ export const ConvPreview : React.FC<PreviewProps> = props => {
             <Message
                 userDetails={latestMessage.userDetails}
                 timeStamp={latestMessage.timeStamp}
-                messageText={latestMessage.messageText}
+                messageText={latestMessage.messageText != "" ? latestMessage.messageText : "Image"}
             />
             <Image source={require('../assets/img/chatChevron.png')} style={styles.chevron} />
         </Pressable>

@@ -21,7 +21,7 @@ export const Message: React.FC<MessageProps> = props => {
                 style={style.image}
             />
             <Text>{props.userDetails.givenName ?? props.userDetails.email} at {date}</Text>
-            <Text>{props.messageText}</Text>
+            {props.messageText && <Text>{props.messageText}</Text>}
             {props.messageImage && <Image source={{uri: props.messageImage}} style={{ maxWidth: 100, height: 100 }} />}
         </View>
     )

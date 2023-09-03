@@ -11,7 +11,7 @@ import {launchCamera, launchImageLibrary, ImagePickerResponse} from 'react-nativ
 import { getStorage, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { initializeApp } from "firebase/app";
-import firebaseConfig from "../../config/firebaseConfig";
+import { firebaseConfig } from "../../config/firebaseConfig";
 
 
 
@@ -30,14 +30,16 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
     useEffect(() => {
         const sortedMessagesRef = messageListRef
             .orderBy("timeStamp", "asc")
+        const limitedMessagesRef = sortedMessagesRef
             .limit(50);
         const unsubscribe = sortedMessagesRef.onSnapshot(querySnapshot => {
+        // const unsubscribe = limitedMessagesRef.onSnapshot(querySnapshot => {
 
             const list: MessageProps[] = [];
             querySnapshot.forEach(doc => {
                 const data = doc.data();
                 const msg : MessageProps = {
-                    messageText : data.messageText,
+                    messageText : data.messageText ?? "",
                     timeStamp   : data.timeStamp,
                     userDetails : data.userDetails,
                     messageImage : data.messageImage ?? "",
@@ -117,11 +119,14 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
             const imageBlob = await fetch(imageUri).then(response => response.blob());
             
             await uploadBytes(storageRef, imageBlob);
+            console.log("Manged to upload bytes");
     
             const downloadURL = await getDownloadURL(storageRef);
+            console.log("download URL set:", downloadURL)
 
             // Save the download URL to Firestore
             const db = getFirestore();
+            console.log("Firestore loaded")
             const imageDocRef = doc(db, 'Conversations', conversationId, 'messages', new Date().getTime().toString());
 
             const imgMsg : MessageProps = {
@@ -129,7 +134,14 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
                 timeStamp : new Date().getTime().toString(),
                 messageImage : downloadURL
             }
-            await setDoc(imageDocRef, imgMsg);
+            console.log("imgMsg populated:", imgMsg);
+            // await setDoc(imageDocRef, imgMsg)
+            try {
+                setDoc(imageDocRef, imgMsg)
+            }
+            catch {
+                console.log("could not write doc");
+            }
           }
         });
       };
