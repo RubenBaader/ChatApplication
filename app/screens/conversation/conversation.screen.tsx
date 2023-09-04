@@ -170,24 +170,24 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
                     onSubmitEditing={sendMessage}
                 />
                 <Button
-                    style={styles.buttonDefault}
+                    style={styles.chatButton}
                     title="Send"
                     onPress={() => sendMessage()}
                 />
                 <Button
-                    style={styles.buttonDefault}
+                    style={styles.chatButton}
                     title="View Gallery 📸"
                     onPress={() => openGallery()}
                 />
                 <Button
-                    style={styles.buttonDefault}
+                    style={styles.chatButton}
                     title="Open Camera 📸"
                     onPress={() => openCamera()}
                 />
 
                 <Button
-                    style={styles.buttonDefault}
-                    title="Back"
+                    style={styles.chatButton}
+                    title="←"
                     onPress={() => backToHome() }
                 />
             </Modal>
@@ -202,8 +202,8 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         margin : 10,
     },
-    buttonDefault: {
-        marginTop: 15,
+    chatButton: {
+        marginTop: 5,
         backgroundColor: "purple",
         // color: "black",
     },
