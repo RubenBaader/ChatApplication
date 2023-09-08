@@ -16,22 +16,35 @@ import { firebaseConfig } from "../../config/firebaseConfig";
 
 
 export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Props ) => {
+    const app = initializeApp(firebaseConfig);
+
+    // Component's own ID to bind to database
     const { conversationId } = route.params
 
+    // Pulls user details from login info to send with message
     const authContext = useAuthContext()
+
+    // All messages taken from the database
     const [messageDataArr, setMessageDataArr] = useState<MessageProps[]>();
 
-    const app = initializeApp(firebaseConfig);
+    // text storage for writing your message
     const [inputValue, setInputValue] = useState<string>('');
     
+    // create reference to collection in firebase
     const conversationRef = firebase.firestore().collection("Conversations").doc(conversationId);
     const messageListRef = conversationRef.collection("messages");
 
     useEffect(() => {
+        // sort messages by timestamp
         const sortedMessagesRef = messageListRef
             .orderBy("timeStamp", "asc")
+        // limit number of messages to get
         const limitedMessagesRef = sortedMessagesRef
             .limit(50);
+
+        // TODO: update query so limiting number of messages does not affect display order
+
+        // set up listener to register changes in the database's messages
         const unsubscribe = sortedMessagesRef.onSnapshot(querySnapshot => {
         // const unsubscribe = limitedMessagesRef.onSnapshot(querySnapshot => {
 
@@ -47,34 +60,42 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
                 list.push(msg);
             });
 
+            // add updated messages to state
             setMessageDataArr(list);
+            // update conversation document to reflext latest message
             conversationRef.set(
                 { "latestMessage" : list[list.length -1] },
                 { merge : true }
             )
         })
 
+        // remove listener when component is unmounted
         return () => { unsubscribe() }
     }, [])
 
+    // sync value of input field with state
     const handleInputChange = (text: string) => {
         setInputValue(text);
     };
 
+    // .navigate('home') rather than navigate.pop() in case user landed on this screen from push notification
     const backToHome = () => {
         navigation.navigate('home');
     }
 
     const sendMessage = async () => {
+        // don't send empty messages
         if(!inputValue)
             return;
+        // populate msg data, then push to db
         const msg: MessageProps = {
             userDetails : authContext.userDetails!,
-            timeStamp: new Date().getTime().toString(),
-            messageText: inputValue
+            timeStamp   : new Date().getTime().toString(),
+            messageText : inputValue
         }
         messageListRef.add(msg);
 
+        // reset input field for next msg
         setInputValue('');
     }
 
@@ -131,7 +152,7 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
 
             const imgMsg : MessageProps = {
                 userDetails : authContext.userDetails!,
-                timeStamp : new Date().getTime().toString(),
+                timeStamp   : new Date().getTime().toString(),
                 messageImage : downloadURL
             }
             console.log("imgMsg populated:", imgMsg);
