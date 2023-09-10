@@ -78,7 +78,7 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
         setInputValue(text);
     };
 
-    // .navigate('home') rather than navigate.pop() in case user landed on this screen from push notification
+    // use navigation.navigate('home') rather than navigation.pop() since user may land on this screen from deep links
     const backToHome = () => {
         navigation.navigate('home');
     }
@@ -100,63 +100,53 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
     }
 
     const openGallery = () => {
-        launchImageLibrary({ mediaType: 'photo' }, async (response: ImagePickerResponse) => {
-            if (!response.didCancel && response.assets && response.assets.length > 0) {
-              const imageUri = response.assets[0].uri!;
-  
-              const storage = getStorage();
-              const storageRef = ref(storage, 'images/' + new Date().getTime());
-  
-  
-              const imageBlob = await fetch(imageUri).then(response => response.blob());
-              
-              await uploadBytes(storageRef, imageBlob);
-      
-              const downloadURL = await getDownloadURL(storageRef);
-  
-              // Save the download URL to Firestore (optional)
-              const db = getFirestore();
-              const imageDocRef = doc(db, 'Conversations', conversationId, 'messages', new Date().getTime().toString());
-              const imgMsg : MessageProps = {
-                  userDetails : authContext.userDetails!,
-                  timeStamp : new Date().getTime().toString(),
-                  messageImage : downloadURL
-              }
-              await setDoc(imageDocRef, imgMsg);
-              
-  
-            }
-          });
+        launchImageLibrary(
+            { mediaType: 'photo' }, 
+            async (response: ImagePickerResponse) => { 
+                handleResponseAsset(response); 
+            });
     }
 
     const openCamera = () => {
-        launchCamera({ mediaType: 'photo' }, async (response: ImagePickerResponse) => {
-          if (!response.didCancel && response.assets && response.assets.length > 0) {
+        launchCamera(
+            { mediaType: 'photo' }, 
+            async (response: ImagePickerResponse) => {
+                handleResponseAsset(response);
+        });
+    }
+
+    // Handle response Asset from camera / gallery
+    const handleResponseAsset = async (response : ImagePickerResponse) => {
+        // Check if response exists
+        if (!response.didCancel && response.assets && response.assets.length > 0)
+        {
             const imageUri = response.assets[0].uri!;
 
+            // connect to firebase file storage
             const storage = getStorage();
             const storageRef = ref(storage, 'images/' + new Date().getTime());
 
+            // get image data
             const imageBlob = await fetch(imageUri).then(response => response.blob());
             
+            // upload data to storage
             await uploadBytes(storageRef, imageBlob);
-            console.log("Manged to upload bytes");
     
+            // get public facing url
             const downloadURL = await getDownloadURL(storageRef);
-            console.log("download URL set:", downloadURL)
 
-            // Save the download URL to Firestore
+            // connect to conversation in firestore
             const db = getFirestore();
-            console.log("Firestore loaded")
             const imageDocRef = doc(db, 'Conversations', conversationId, 'messages', new Date().getTime().toString());
 
+            // populate firestore doc with img data
             const imgMsg : MessageProps = {
                 userDetails : authContext.userDetails!,
                 timeStamp   : new Date().getTime().toString(),
                 messageImage : downloadURL
             }
-            console.log("imgMsg populated:", imgMsg);
-            // await setDoc(imageDocRef, imgMsg)
+
+            // save to collection
             try {
                 setDoc(imageDocRef, imgMsg)
             }
@@ -164,8 +154,8 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
                 console.log("could not write doc");
             }
           }
-        });
-      };
+    }
+    
 
     return (
         <SafeAreaView>
