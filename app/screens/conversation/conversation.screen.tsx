@@ -7,11 +7,9 @@ import { firebase } from "@react-native-firebase/firestore";
 import { useAuthContext } from "../../contexts/auth.context"; 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Props } from "../../navigators";
-import {launchCamera, launchImageLibrary, ImagePickerResponse} from 'react-native-image-picker';
-import { getStorage, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "../../config/firebaseConfig";
+import { openCamera, openGallery } from "../../services/image.service";
 
 
 
@@ -98,65 +96,7 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
         // reset input field for next msg
         setInputValue('');
     }
-
-    const openGallery = () => {
-        launchImageLibrary(
-            { mediaType: 'photo' }, 
-            async (response: ImagePickerResponse) => { 
-                handleResponseAsset(response); 
-            });
-    }
-
-    const openCamera = () => {
-        launchCamera(
-            { mediaType: 'photo' }, 
-            async (response: ImagePickerResponse) => {
-                handleResponseAsset(response);
-        });
-    }
-
-    // Handle response Asset from camera / gallery
-    const handleResponseAsset = async (response : ImagePickerResponse) => {
-        // Check if response exists
-        if (!response.didCancel && response.assets && response.assets.length > 0)
-        {
-            const imageUri = response.assets[0].uri!;
-
-            // connect to firebase file storage
-            const storage = getStorage();
-            const storageRef = ref(storage, 'images/' + new Date().getTime());
-
-            // get image data
-            const imageBlob = await fetch(imageUri).then(response => response.blob());
-            
-            // upload data to storage
-            await uploadBytes(storageRef, imageBlob);
     
-            // get public facing url
-            const downloadURL = await getDownloadURL(storageRef);
-
-            // connect to conversation in firestore
-            const db = getFirestore();
-            const imageDocRef = doc(db, 'Conversations', conversationId, 'messages', new Date().getTime().toString());
-
-            // populate firestore doc with img data
-            const imgMsg : MessageProps = {
-                userDetails : authContext.userDetails!,
-                timeStamp   : new Date().getTime().toString(),
-                messageImage : downloadURL
-            }
-
-            // save to collection
-            try {
-                setDoc(imageDocRef, imgMsg)
-            }
-            catch {
-                console.log("could not write doc");
-            }
-          }
-    }
-    
-
     return (
         <SafeAreaView>
             <Modal
@@ -188,12 +128,12 @@ export const ConversationScreen : React.FC<Props> = ( {route, navigation} : Prop
                 <Button
                     style={styles.chatButton}
                     title="View Gallery 📸"
-                    onPress={() => openGallery()}
+                    onPress={() => openGallery(conversationId, authContext.userDetails!)}
                 />
                 <Button
                     style={styles.chatButton}
                     title="Open Camera 📸"
-                    onPress={() => openCamera()}
+                    onPress={() => openCamera(conversationId, authContext.userDetails!)}
                 />
 
                 <Button
